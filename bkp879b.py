@@ -97,12 +97,13 @@ class ScpiConnection:
 
 
     def auto_fetch(self, quantity=0):
-        """ Returns the result of auto-fetched results as a tuple 
+        """ A generator yielding a result tuple containing the primary,
+        secondary, and compared result with each iteration.
         
         Set the optional parameter 'quantity' to the maximnum number
-        of samples you wish to collect (default is 0 - unlimited)
+        of samples you wish to collect (default is 0: unlimited)
 
-        Note: will return None if there is a timeout waiting for a
+        Note: will yield a None if there is a timeout waiting for a
         reading. """
 
         self.con.flushInput()
@@ -116,6 +117,7 @@ class ScpiConnection:
                 yield None
             else:
                 counter += 1
+                yield result
 
             if quantity is not 0 and quantity == counter:
                 return
@@ -148,7 +150,7 @@ class ScpiConnection:
     def get_frequency(self):
         """Returns the current measurement frequency setting
 
-        returns a string of 100Hz, 120Hz, 1kHz, or 10kHz """
+        returns a string of '100Hz', '120Hz', '1kHz', or '10kHz' """
 
         return self.sendcmd("FREQuency?")
 
@@ -156,7 +158,7 @@ class ScpiConnection:
     # Function Subsystem
     def set_primary(self, param):
         """Sets the primary measurement parameter.  Accepts a string
-        value of L, C, R, or Z.
+        value of 'L', 'C', 'R', or 'Z'.
 
         L: Inductance
         C: Capacitance
@@ -176,7 +178,7 @@ class ScpiConnection:
         D: Dissipation factor
         Q: Quality factor
         THETA: Phase angle (Labeled as 'θ' on the meter)
-        ESR: Equivalent series resistance"""
+        ESR: Equivalent series resistance """
 
         if ("D", "Q", "THETA", "ESR").count(param.upper()) == 0:
             # TODO: Throw an exception here
