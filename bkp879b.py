@@ -1,9 +1,11 @@
 #-*- coding: utf-8
-""" SCPI 'driver' for the BK Percision 879B LCR Meter 
+""" SCPI 'driver' for the BK Precision 879B LCR Meter 
 Should also work with the 878B.
 
-Requires pyserial and Python 2.6 or greater.
-Should work with Python 3.x as well. """
+Requires pyserial 2.6 (2.5 might work) and Python 2.6or greater.
+Compatible with Python 3.x as well.
+"""
+
 import serial
 import re
 from serial.serialutil import SerialException
