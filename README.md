@@ -38,7 +38,7 @@ Contributing
 Fork and submit a pull request.
 
 
-License
+MIT License
 ===========
 Copyright (c) 2012 Jim Battin
 
