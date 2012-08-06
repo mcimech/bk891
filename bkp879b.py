@@ -2,8 +2,13 @@
 """ SCPI 'driver' for the BK Precision 879B LCR Meter 
 Should also work with the 878B.
 
-Requires pyserial 2.6 (2.5 might work) and Python 2.6or greater.
+Requires pyserial 2.6 (2.5 might work) and Python 2.6 or greater.
 Compatible with Python 3.x as well.
+
+MIT-Licensed: http://opensource.org/licenses/mit-license.html
+
+Copyright 2012 Jim Battin
+jrbattin@gmail.com
 """
 
 import serial
@@ -28,7 +33,7 @@ def connect(device, read_timeout=10, write_timeout=10, post_command_delay=150):
 
 def parse(cmd_result):
     """ Parses data returned from the device and returns it as an
-    appropriate python datatype """
+    appropriate python datatype. """
 
     float_pattern = re.compile("^(\+|\-)[0-9]\.[0-9]{5}e(\-|\+)[0-9][0-9]")
     cmd_result = cmd_result.replace("\r\n", "")
@@ -62,10 +67,10 @@ def parse(cmd_result):
 
 
 class ScpiConnection:
-    """Object handling all SCPI and IEEE 488 command I/O."""
+    """ Object handling all SCPI and IEEE 488 command I/O. """
 
     def __init__(self, con, post_command_delay):
-        """Accepts a pyserial Serial object and wraps it with python-ish SCPI 
+        """ Accepts a pyserial Serial object and wraps it with python-ish SCPI 
         functionality. """
 
         self.con = con
@@ -81,7 +86,7 @@ class ScpiConnection:
         """ Sends a SCPI command to the device and returns the result in an
         appropriate python datatype.  Sleeps for the number of milliseconds 
         specified by post_command_delay prior to reading the result.
-        Note: This will insert the NL for you."""
+        Note: This will insert the NL for you. """
 
         self.con.flushInput()
         self.con.flushOutput()
@@ -128,19 +133,19 @@ class ScpiConnection:
 
     # "Fetch Subsystem" - Fetches reading
     def fetch(self):
-        """Returns the primary, secondary, and tolerance compared
+        """ Returns the primary, secondary, and tolerance compared
         result currently measured from the device 
 
         Returns a tuple containing the primary value (float), secondary
-        value (float), and the tolerance compared (integer or None)"""
+        value (float), and the tolerance compared (integer or None). """
 
         return self.sendcmd("FETCh?")
 
 
     # Frequency Subsystem
     def set_frequency(self, frequency):
-        """Sets the measurment frequency.  Accepted values are:
-        100, 120, 1000, and 10000"""
+        """ Sets the measurment frequency.  Accepted values are:
+        100, 120, 1000, and 10000. """
 
         frequency = int(frequency)
         if (100, 120, 1000, 10000).count(frequency) == 0:
@@ -151,7 +156,7 @@ class ScpiConnection:
 
 
     def get_frequency(self):
-        """Returns the current measurement frequency setting
+        """ Returns the current measurement frequency setting
 
         returns a string of '100Hz', '120Hz', '1kHz', or '10kHz' """
 
@@ -160,7 +165,7 @@ class ScpiConnection:
 
     # Function Subsystem
     def set_primary(self, param):
-        """Sets the primary measurement parameter.  Accepts a string
+        """ Sets the primary measurement parameter.  Accepts a string
         value of 'L', 'C', 'R', or 'Z'.
 
         L: Inductance
@@ -181,7 +186,7 @@ class ScpiConnection:
         D: Dissipation factor
         Q: Quality factor
         THETA: Phase angle (Labeled as 'θ' on the meter)
-        ESR: Equivalent series resistance """
+        ESR: Equivalent series resistance. """
 
         if ("D", "Q", "THETA", "ESR").count(param.upper()) == 0:
             # TODO: Throw an exception here
@@ -190,7 +195,7 @@ class ScpiConnection:
 
 
     def get_primary(self):
-        """Queries and returns the primary measurement parameter
+        """ Queries and returns the primary measurement parameter
         as a string.  Returns 'L', 'C', 'R', or 'Z'.
 
         L: Inductance
@@ -202,39 +207,39 @@ class ScpiConnection:
 
 
     def get_secondary(self):
-        """Queries and returns the secondary measurement parameter
+        """ Queries and returns the secondary measurement parameter
         as a string.  Retrusn 'D', 'Q', 'THETA', or 'ESR'
 
         D: Dissipation factor
         Q: Quality factor
         THETA: Phase angle (Labeled as 'θ' on the meter)
-        ESR: Equivalent series resistance"""
+        ESR: Equivalent series resistance. """
 
         return self.sendcmd("FUNCtion: impb?")
 
 
     def set_equiv_series(self):
-        """Enables series measurement mode"""
+        """ Sets measurement mode to series. """
         self.sendcmd("FUNCtion:EQUivalent SERies")
 
 
     def set_equiv_parallel(self):
-        """Enables parallel measurement mode"""
+        """ Sets measurement mode to parallel. """
 
         self.sendcmd("FUNCtion:EQUivalent parallel")
 
 
     def get_equiv(self):
-        """Queries and returns the measurement mode (series or parallel)
+        """ Queries and returns the measurement mode (series or parallel)
 
-        returns a string of 'SER' or 'PAL' """
+        returns a string of 'SER' or 'PAL'. """
         return self.sendcmd("FUNCtion:EQUivalent?")
 
 
     # Calculate Subsystem
     def set_relative(self, relative_value):
         """ Enabels or disables relative function based on 
-        boolean value """
+        boolean value. """
 
         if(relative_value):
             self.sendcmd("CALCulate:RELative:STATe ON")
@@ -245,7 +250,7 @@ class ScpiConnection:
     def get_relative_state(self):
         """ Queries and returns the state of the relative function 
 
-        Returns a boolean value of the current relative state."""
+        Returns a boolean value of the current relative state. """
         return self.sendcmd("CALCulate:RELative:STATe?")
 
 
@@ -253,12 +258,12 @@ class ScpiConnection:
         """ Queries and returns the relative value or None if unavailable 
 
         Returns a float of the relative offset or None if Relative state 
-        is inactive """
+        is inactive. """
         return self.sendcmd("CALCulate:RELative:VALUe?")
 
 
     def set_tolerance_state(self, tolerance_state):
-        """ Enables or disables tolerance state based on boolean value """
+        """ Enables or disables tolerance state based on boolean value. """
 
         if tolerance_state:
             self.sendcmd("CALCulate:TOLerance:STATe ON")
@@ -267,7 +272,7 @@ class ScpiConnection:
 
 
     def set_tolerance_range(self, tol_range):
-        """ Sets the current tolerance range to 1, 5, 10, or 20 percent """
+        """ Sets the current tolerance range to 1, 5, 10, or 20 percent. """
         if (1, 5, 10, 20).count(int(tol_range)) == 0:
             # TODO: Throw exception here
             return
@@ -278,7 +283,7 @@ class ScpiConnection:
     def get_tolerance_state(self):
         """ Queries and returns whether tolerance is enabled or disabled 
 
-        Returns a boolean value """
+        Returns a boolean value. """
         return self.sendcmd("CALCulate:TOLerance:STATe?")
 
 
@@ -286,7 +291,7 @@ class ScpiConnection:
         """ Queries and returns the nominal value fo tolerance or None
         if unavailable 
 
-        returns a float value or None if unavailable """
+        returns a float value or None if unavailable. """
         return self.sendcmd("CALCulate:TOLerance:NOMinal?")
 
 
@@ -294,7 +299,7 @@ class ScpiConnection:
         """ Queries and returns the percent value of tolerance or None 
         if unavailable
 
-        Returns a float value or None if unavailable """
+        Returns a float value or None if unavailable. """
         return self.sendcmd("CALCulate:TOLerance:VALUe?")
 
 
@@ -302,12 +307,12 @@ class ScpiConnection:
         """ Queries and returns the tolerance range.  
         
         Returns a string value of 'BIN1', 'BIN2', 'BIN3', 'BIN4'
-        or None if unavailable """
+        or None if unavailable. """
         return self.sendcmd("CALCulate:TOLerance:RANGe?")
 
 
     def set_recording_state(self, recording_state):
-        """ Enables or disables the recording state of the device """
+        """ Enables or disables the recording state of the device. """
 
         if recording_state:
             self.sendcmd("CALCulate:RECording:STATe ON")
@@ -317,7 +322,7 @@ class ScpiConnection:
 
     def get_recording_state(self):
         """ Queries and returns the status of recording 
-        Returns a boolean value """
+        Returns a boolean value. """
         return self.sendcmd("CALCulate:RECording:STATe?")
 
 
@@ -325,7 +330,7 @@ class ScpiConnection:
         """ Queries and returns the max recorded value 
         
         Returns a tuple of floats containing the 
-        primary and secondary maximum measurement """
+        primary and secondary maximum measurement. """
         return self.sendcmd("CALCulate:RECording:MAXimum?")
 
 
@@ -333,7 +338,7 @@ class ScpiConnection:
         """ Queries and returns the minimum recorded value
 
         Returns a tuple of floats containing the 
-        primary and secondary minimum measurement """
+        primary and secondary minimum measurement. """
         return self.sendcmd("CALCulate:RECording:MINimum?")
 
 
@@ -341,7 +346,7 @@ class ScpiConnection:
         """ Queries and returns the average recorded value
 
         Returns a tuple of floats containing the 
-        primary and secondary average measurement """
+        primary and secondary average measurement. """
         return self.sendcmd("CALCulate:RECording:AVERage?")
 
 
@@ -349,24 +354,24 @@ class ScpiConnection:
         """ Queries and returns the present value of the recording function
 
         Returns a tuple of floats containing the 
-        primary and secondary present measurement """
+        primary and secondary present measurement. """
         return self.sendcmd("CALCulate:RECording:PRESent?")
 
 
     # IEEE 488 commands
     def local_lockout(self):
-        """Locks the front panel"""
+        """ Locks the front panel """
         self.sendcmd("*LLO")
 
 
     def go_local(self):
-        """Puts the meter into local state - clears front-panel lockout """
+        """ Puts the meter into local state - clears front-panel lockout. """
         self.sendcmd("*GLO")
 
 
-    def get_inststrument(self):
-        """Queries and returns the instrument ID
-        containing the model, firmware version, and serial number"""
+    def get_instrument(self):
+        """ Queries and returns the instrument ID
+        containing the model, firmware version, and serial number. """
 
         return self.sendcmd("*IDN?")
 
