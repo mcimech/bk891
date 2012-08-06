@@ -1,4 +1,3 @@
-===========
 bkp879b.py
 ===========
 
@@ -6,12 +5,12 @@ bkp879b.py is a self-contained SCPI "driver" library for the BK Precision 879B a
 
 Serial communication is handled by the pyserial library (http://pyserial.sourceforge.net/)
 
-Comma-separated results are contained inside a tuple
--All scientific notation values are returned as floats
--'ON' 'OFF' values are returned as a boolean
--Integer values are returned as integers
--N or '----' values are returned as a None type
--Everything else is returned as a utf-8 string
+- Comma-separated results are contained inside a tuple
+- All scientific notation values are returned as floats
+- 'ON' 'OFF' values are returned as a boolean
+- Integer values are returned as integers
+- N or '----' values are returned as a None type
+- Everything else is returned as a utf-8 string
 
 For a detailed list of functionality see the bkp879b.py file
 
@@ -27,8 +26,6 @@ Usage:
 	# Activate auto-fetching mode on the meter by pressing "USB" Key
 	for reading in instrument.auto_fetch():
 		print(reading)
-
-
 
 
 Dependencies
