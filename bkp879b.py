@@ -2,7 +2,8 @@
 """ SCPI 'driver' for the BK Percision 879B LCR Meter 
 Should also work with the 878B.
 
-Requires pyserial and Python 2.6 or greater."""
+Requires pyserial and Python 2.6 or greater.
+Should work with Python 3.x as well. """
 import serial
 import re
 from serial.serialutil import SerialException
@@ -91,7 +92,7 @@ class ScpiConnection:
         sleep(float(self.post_command_delay/1000.0))
         self.con.flush() 
         if(command[-1] == "?"):
-            result = parse(self.con.readline())
+            result = parse(self.con.readline().decode("utf-8"))
 
         return result
 
@@ -111,7 +112,7 @@ class ScpiConnection:
         counter = 0
 
         while True:
-            result = parse(self.con.readline())
+            result = parse(self.con.readline().decode("utf-8"))
 
             if len(result) == 0:
                 yield None
@@ -371,4 +372,4 @@ class ScpiConnection:
 if __name__ == "__main__":
     TEST = connect("/dev/tty.SLAB_USBtoUART")
     for reading in TEST.auto_fetch():
-        print reading
+        print(reading)
