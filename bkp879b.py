@@ -35,7 +35,7 @@ def parse(cmd_result):
     """ Parses data returned from the device and returns it as an
     appropriate python datatype. """
 
-    float_pattern = re.compile("^(\+|\-)[0-9]\.[0-9]{5}e(\-|\+)[0-9][0-9]")
+    float_pattern = re.compile("^(\+|\-)[0-9]\.[0-9]{5,6}e(\-|\+)[0-9][0-9]")
     cmd_result = cmd_result.replace("\r\n", "")
     split_input = cmd_result.split(",")
     result = []
@@ -149,8 +149,8 @@ class ScpiConnection:
 
         frequency = int(frequency)
         if (100, 120, 1000, 10000).count(frequency) == 0:
-            # TODO: Throw exception here
-            return
+            raise ScpiException("""Valid frequencies are: 100, 120, 1000, 
+                and 10000.""")
 
         self.sendcmd("FREQuency {0}".format(frequency))
 
@@ -174,8 +174,9 @@ class ScpiConnection:
         Z: Impedance """
 
         if ("L", "C", "R", "Z").count(param.upper()) == 0:
-            # TODO: Throw an exception here
-            return
+            raise ScpiException("""Valid primary parameters are 'L', 'C', 'R', 
+                or 'Z'.""")
+
         self.sendcmd("FUNCtion:impa {0}".format(param.upper()))
 
 
@@ -189,8 +190,9 @@ class ScpiConnection:
         ESR: Equivalent series resistance. """
 
         if ("D", "Q", "THETA", "ESR").count(param.upper()) == 0:
-            # TODO: Throw an exception here
-            return
+            raise ScpiException("""Valid secondary parameters are 'D',
+            'Q', 'THETA', or 'ESR'""")
+
         self.sendcmd("FUNCtion:impb {0}".format(param.upper()))
 
 
@@ -274,8 +276,8 @@ class ScpiConnection:
     def set_tolerance_range(self, tol_range):
         """ Sets the current tolerance range to 1, 5, 10, or 20 percent. """
         if (1, 5, 10, 20).count(int(tol_range)) == 0:
-            # TODO: Throw exception here
-            return
+            raise ScpiException(""" Valid tolerance ranges are 1, 5, 
+                10 or 20. """)
 
         self.sendcmd("CALCulate:TOLerance:RANGe {0}".format(tol_range))
 
@@ -374,6 +376,16 @@ class ScpiConnection:
         containing the model, firmware version, and serial number. """
 
         return self.sendcmd("*IDN?")
+
+
+class ScpiException(Exception):
+    """ Exception class for SCPI Commands.  Raised when an enum-bounded
+    parameter is invalid """
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
 
 
 if __name__ == "__main__":
