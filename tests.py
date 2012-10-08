@@ -18,20 +18,18 @@ class TestConnect(unittest.TestCase):
         self.goodserial = "/dev/tty.SLAB_USBtoUART"
         self.badserial = "/dev/null"
 
-
     def test_goodconnect(self):
         """ Test to ensure our 'happy path' of a valid serial connection.
             Assumes self.goodserial is set to a valid serial device """
         scpi_obj = self.bkp.connect(self.goodserial)
         self.assertTrue(isinstance(scpi_obj, bkp879b.ScpiConnection))
 
-
     def test_badconnect(self):
         """ Test to ensure our 'unhappy path' is producing the correct
-            exception. Assumes self.badserial is set to an invalid 
+            exception. Assumes self.badserial is set to an invalid
             serial device. """
         with self.assertRaises(SerialException):
-            scpi_obj = self.bkp.connect(self.badserial)
+            self.bkp.connect(self.badserial)
 
 
 class TestParse(unittest.TestCase):
@@ -76,6 +74,7 @@ class TestParse(unittest.TestCase):
         self.assertTupleEqual((single_int, single_float, single_none, single_bool,
             single_literal), (123, 23456.78, None, True, "HOLD"))
 
+
 class TestScpiConnection(unittest.TestCase):
     """ Tests SCPI Connection object - specifically the command output """
 
@@ -103,7 +102,7 @@ class TestScpiConnection(unittest.TestCase):
             self.scpi.set_secondary("L")
 
     def test_badtolerance(self):
-        """ Ensures appropriate exception is thrown for 
+        """ Ensures appropriate exception is thrown for
         set_tolerance_range. """
 
         with self.assertRaises(bkp879b.ScpiException):
