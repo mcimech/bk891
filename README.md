@@ -1,7 +1,7 @@
-bkp879b.py
-===========
+bkp879b
+=======
 
-bkp879b.py is a self-contained SCPI "driver" library for the BK Precision 879B and 878B LCR Meters. It provides a pythonic interface to all of the documented SCPI commands in the manual.  Query results are returned as native python datatypes for easy integration into the rest of your project.
+bkp879b is a self-contained SCPI "driver" library for the BK Precision 879B and 878B LCR Meters. It provides a pythonic interface to all of the documented SCPI commands in the manual.  Query results are returned as native python datatypes for easy integration into the rest of your project.
 
 Serial communication is handled by the pyserial library (http://pyserial.sourceforge.net/)
 
@@ -12,7 +12,11 @@ Serial communication is handled by the pyserial library (http://pyserial.sourcef
 - N or '----' values are returned as a None type
 - Everything else is returned as a utf-8 string
 
-For a detailed list of functionality see the bkp879b.py file
+For a detailed list of functionality see the `bkp879b/scpi.py` file
+
+Installation:
+
+    pip install bkp879b
 
 Usage:
 
@@ -40,7 +44,7 @@ Fork and submit a pull request.
 
 MIT License
 ===========
-Copyright (c) 2012 Jim Battin
+Copyright (c) 2016 Jim Battin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
