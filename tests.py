@@ -8,7 +8,7 @@ from serial import SerialException
 
 def dummy_sendcmd(command):
     ''' Dummy sendcmd method for testing SCPI command generation '''
-    return '{0}\n'.format(command)
+    return bytes('{0}\n'.format(command), 'utf-8')
 
 
 class TestConnect(unittest.TestCase):
@@ -51,7 +51,7 @@ class TestParse(unittest.TestCase):
 
     def test_integers(self):
         ''' Tests integer parsing '''
-        ints = self.bkp.parse(b'+800,-900234,0,27'.encode('ascii'))
+        ints = self.bkp.parse('+800,-900234,0,27'.encode('ascii'))
         self.assertTupleEqual(ints, (800, -900234, 0, 27))
 
     def test_floats(self):

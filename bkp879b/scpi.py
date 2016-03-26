@@ -43,7 +43,7 @@ def parse(cmd_result):
     appropriate python datatype. '''
 
     float_pattern = re.compile(r'^(\+|\-)[0-9]\.[0-9]{5,6}e(\-|\+)[0-9][0-9]')
-    cmd_result = cmd_result.replace('\r\n', '')
+    cmd_result = cmd_result.decode('utf-8').replace('\r\n', '')
     split_input = cmd_result.split(',')
     result = []
 
