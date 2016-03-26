@@ -20,17 +20,18 @@ Installation:
 
 Usage:
 
-	import bkp879b
+```
+import bkp879b
 
-	instrument = bkp879b.connect("/dev/yourdevice") # Windows users can just pass in 'COMx'
+instrument = bkp879b.connect("/dev/yourdevice") # Windows users can just pass in 'COMx'
 
-	instrument.set_primary("C") # Sets primary measurement to Capacitence
-	instrument.set_secondary("ESR") # Sets secondary measurement to equivalent series resistance
+instrument.set_primary("C") # Sets primary measurement to Capacitence
+instrument.set_secondary("ESR") # Sets secondary measurement to equivalent series resistance
 
-	# Activate auto-fetching mode on the meter by pressing "USB" Key
-	for reading in instrument.auto_fetch():
-		print(reading)
-
+# Activate auto-fetching mode on the meter by pressing "USB" Key
+for reading in instrument.auto_fetch():
+	print(reading)
+```python
 
 Dependencies
 ===========
