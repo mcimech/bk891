@@ -123,7 +123,7 @@ class ScpiConnection(object):
         counter = 0
 
         while True:
-            result = parse(self.con.readline().decode('utf-8'))
+            result = parse(self.con.readline())
 
             if len(result) == 0:
                 yield None
