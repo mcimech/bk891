@@ -1,4 +1,6 @@
 ''' Unit tests for bkp879b.py '''
+from __future__ import print_function
+
 import unittest
 import bkp879b
 from serial import SerialException
@@ -21,7 +23,15 @@ class TestConnect(unittest.TestCase):
     def test_goodconnect(self):
         ''' Test to ensure our 'happy path' of a valid serial connection.
             Assumes self.goodserial is set to a valid serial device '''
-        scpi_obj = self.bkp.connect(self.goodserial)
+
+        try:
+            scpi_obj = self.bkp.connect(self.goodserial)
+        except SerialException:
+            print('\n!!!!!!! IMPORTANT !!!!!!!!\n',
+                  'Skipped test: test_goodconnect because no device found\n'
+                  '!!!!!!! IMPORTANT !!!!!!!!')
+            return
+
         self.assertTrue(isinstance(scpi_obj, bkp879b.ScpiConnection))
 
     def test_badconnect(self):
