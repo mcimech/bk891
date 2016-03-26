@@ -1,6 +1,6 @@
 bkp879b
 =======
-
+[![Build Status](https://travis-ci.org/jimbattin/bkp879b.svg?branch=master)](https://travis-ci.org/jimbattin/bkp879b)
 bkp879b is a self-contained SCPI "driver" library for the BK Precision 879B and 878B LCR Meters. It provides a pythonic interface to all of the documented SCPI commands in the manual.  Query results are returned as native python datatypes for easy integration into the rest of your project.
 
 Serial communication is handled by the pyserial library (http://pyserial.sourceforge.net/)
