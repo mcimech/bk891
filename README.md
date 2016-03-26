@@ -33,6 +33,7 @@ for reading in instrument.auto_fetch():
 	print(reading)
 ```python
 
+
 Dependencies
 ===========
 pyserial >= 2.6
