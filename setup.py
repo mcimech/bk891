@@ -21,7 +21,5 @@ setup(
     author_email='jrbattin@gmail.com',
     packages=[str('bkp879b')],
     platforms='any',
-    extras_require={
-        'pyserial': ['pyserial>=2.6'],
-    }
+    install_requires=['pyserial>=2.6']
 )
