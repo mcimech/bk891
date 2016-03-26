@@ -15,7 +15,7 @@ setup(
     version=version,
     description='BK Precision 879B/878B Python Library/Driver',
     url='https://github.com/jimbattin/bkp879b',
-    download_url='https://github.com/jimbattin/bkp879b/{0}'.format(version),
+    download_url='https://github.com/jimbattin/bkp879b/tarball/{0}'.format(version),
     license='MIT',
     author='Jim Battin',
     author_email='jrbattin@gmail.com',
