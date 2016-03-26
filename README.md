@@ -16,11 +16,13 @@ For a detailed list of functionality see the `bkp879b/scpi.py` file
 
 Installation:
 
-    pip install bkp879b
+```shell
+pip install bkp879b
+```
 
 Usage:
 
-```
+```python
 import bkp879b
 
 instrument = bkp879b.connect("/dev/yourdevice") # Windows users can just pass in 'COMx'
@@ -31,7 +33,7 @@ instrument.set_secondary("ESR") # Sets secondary measurement to equivalent serie
 # Activate auto-fetching mode on the meter by pressing "USB" Key
 for reading in instrument.auto_fetch():
 	print(reading)
-```python
+```
 
 
 Dependencies
