@@ -1,7 +1,9 @@
-bkp879b
-=======
-[![Build Status](https://travis-ci.org/jimbattin/bkp879b.svg?branch=master)](https://travis-ci.org/jimbattin/bkp879b)
-bkp879b is a self-contained SCPI "driver" library for the BK Precision 879B and 878B LCR Meters. It provides a pythonic interface to all of the documented SCPI commands in the manual.  Query results are returned as native python datatypes for easy integration into the rest of your project.
+bkp891
+======
+
+bk891 is a self-contained SCPI "driver" library for the BK Precision 891 LCR Meter. It provides a pythonic interface to all of the documented SCPI commands in the manual.  Query results are returned as native python datatypes for easy integration into the rest of your project.
+
+This library is based on the [bkp879b](https://github.com/jimbattin/bkp879b) library by Jim Battin. 
 
 Serial communication is handled by the pyserial library (http://pyserial.sourceforge.net/)
 
@@ -12,27 +14,22 @@ Serial communication is handled by the pyserial library (http://pyserial.sourcef
 - N or '----' values are returned as a None type
 - Everything else is returned as a utf-8 string
 
-For a detailed list of functionality see the `bkp879b/scpi.py` file
+For a detailed list of functionality see the `bkp891/scpi891.py` file
 
 Installation:
 
 ```shell
-pip install bkp879b
+pip install bkp891
 ```
 
 Usage:
 
 ```python
-import bkp879b
+import bkp891
 
-instrument = bkp879b.connect("/dev/yourdevice") # Windows users can just pass in 'COMx'
+instrument = bkp891.connect("/dev/yourdevice") # Windows users can just pass in 'COMx'
 
-instrument.set_primary("C") # Sets primary measurement to Capacitence
-instrument.set_secondary("ESR") # Sets secondary measurement to equivalent series resistance
-
-# Activate auto-fetching mode on the meter by pressing "USB" Key
-for reading in instrument.auto_fetch():
-	print(reading)
+#TBA
 ```
 
 
@@ -48,7 +45,7 @@ Fork and submit a pull request.
 
 MIT License
 ===========
-Copyright (c) 2016 Jim Battin
+Copyright (c) 2020 Johannes Payr (jpunkt)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

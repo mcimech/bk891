@@ -1,8 +1,8 @@
-''' Unit tests for bkp879b.py '''
+''' Unit tests for bkp891.py '''
 from __future__ import print_function
 
 import unittest
-import bkp879b
+import bkp891
 from serial import SerialException
 
 
@@ -16,7 +16,7 @@ class TestConnect(unittest.TestCase):
 
     def setUp(self):
         ''' Test setup '''
-        self.bkp = bkp879b
+        self.bkp = bkp891
         self.goodserial = '/dev/tty.SLAB_USBtoUART'
         self.badserial = '/dev/null'
 
@@ -32,7 +32,7 @@ class TestConnect(unittest.TestCase):
                   '!!!!!!! IMPORTANT !!!!!!!!')
             return
 
-        self.assertTrue(isinstance(scpi_obj, bkp879b.ScpiConnection))
+        self.assertTrue(isinstance(scpi_obj, bkp891.ScpiConnection))
 
     def test_badconnect(self):
         ''' Test to ensure our 'unhappy path' is producing the correct
@@ -47,7 +47,7 @@ class TestParse(unittest.TestCase):
 
     def setUp(self):
         ''' Test setup '''
-        self.bkp = bkp879b
+        self.bkp = bkp891
 
     def test_integers(self):
         ''' Tests integer parsing '''
@@ -94,32 +94,32 @@ class TestScpiConnection(unittest.TestCase):
 
     def setUp(self):
         ''' Sets up our ScpiConnection object with sendcmd dummy object '''
-        self.scpi = bkp879b.ScpiConnection(None, 100)
+        self.scpi = bkp891.ScpiConnection(None, 100)
         self.scpi.sendcmd = dummy_sendcmd
 
     def test_badfrequency(self):
         ''' Ensures appropriate exception is thrown for set_frequency. '''
 
-        with self.assertRaises(bkp879b.ScpiException):
+        with self.assertRaises(bkp891.ScpiException):
             self.scpi.set_frequency(90)
 
     def test_badprimary(self):
         ''' Ensures appropriate exception is thrown for set_primary. '''
 
-        with self.assertRaises(bkp879b.ScpiException):
+        with self.assertRaises(bkp891.ScpiException):
             self.scpi.set_primary('THETA')
 
     def test_badsecondary(self):
         ''' Ensures appropriate exception is thrown for set_primary. '''
 
-        with self.assertRaises(bkp879b.ScpiException):
+        with self.assertRaises(bkp891.ScpiException):
             self.scpi.set_secondary('L')
 
     def test_badtolerance(self):
         ''' Ensures appropriate exception is thrown for
         set_tolerance_range. '''
 
-        with self.assertRaises(bkp879b.ScpiException):
+        with self.assertRaises(bkp891.ScpiException):
             self.scpi.set_tolerance_range(3)
 
 

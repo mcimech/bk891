@@ -1,14 +1,12 @@
 #-*- coding: utf-8
-""" SCPI 'driver' for the BK Precision 879B LCR Meter
-Should also work with the 878B.
+""" SCPI 'driver' for the BK Precision 891 LCR Meter
 
-Requires pyserial 2.6 (2.5 might work) and Python 2.6 or greater.
-Compatible with Python 3.x as well.
+Requires pyserial 2.6 (2.5 might work) and Python 3.5 or greater.
 
 MIT-Licensed: http://opensource.org/licenses/mit-license.html
 
-Copyright 2012 Jim Battin
-jrbattin@gmail.com
+Copyright 2020 Johannes Payr
+johannes@arg-art.org
 """
 from __future__ import print_function
 
@@ -19,6 +17,7 @@ import serial
 from serial.serialutil import SerialException
 
 
+# TODO update constants
 FREQUENCIES = frozenset([100, 120, 1000, 10000])
 MEASURES = frozenset(['L', 'C', 'R', 'Z'])
 SECONDARY_MEASURES = frozenset(['D', 'Q', 'THETA', 'ESR'])
