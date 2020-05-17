@@ -11,17 +11,50 @@ johannes@arg-art.org
 from __future__ import print_function
 
 import re
+from enum import Enum
 from time import sleep
+
+import datetime
 
 import serial
 from serial.serialutil import SerialException
 
 
 # TODO update constants
-FREQUENCIES = frozenset([100, 120, 1000, 10000])
+class MeasRange(Enum):
+    HOLD = 0
+    AUTO = 1
+
+
+class MeasSpeed(Enum):
+    SLOW = 1
+    FAST = 2
+
+
+class Measurement(Enum):
+    CSQ = 0
+    CSD = 1
+    CSR = 2
+    CPQ = 3
+    CPD = 4
+    CPR = 5
+    CPG = 6
+    LSQ = 7
+    LSD = 8
+    LSR = 9
+    LPQ = 10
+    LPD = 11
+    LPR = 12
+    LPG = 13
+    ZTH = 14
+    YTH = 15
+    RX = 16
+    GB = 17
+    DCR = 18
+
+
 MEASURES = frozenset(['L', 'C', 'R', 'Z'])
 SECONDARY_MEASURES = frozenset(['D', 'Q', 'THETA', 'ESR'])
-TOLERANCES = frozenset([1, 5, 10, 20])
 
 
 def connect(device, read_timeout=10, write_timeout=10, post_command_delay=150):
@@ -29,7 +62,8 @@ def connect(device, read_timeout=10, write_timeout=10, post_command_delay=150):
     ScpiConnection object."""
 
     try:
-        con = serial.Serial(device, 9600, timeout=read_timeout, writeTimeout=write_timeout)
+        con = serial.Serial(device, 9600, timeout=read_timeout,
+                            writeTimeout=write_timeout)
     except SerialException as ex:
         if ex.errno == 16:
             print('Cannot open {0} - device is busy.'.format(device))
@@ -41,7 +75,8 @@ def parse(cmd_result):
     """ Parses data returned from the device and returns it as an
     appropriate python datatype. """
 
-    float_pattern = re.compile(r'^(\+|\-)[0-9]\.[0-9]{5,6}e(\-|\+)[0-9][0-9]')
+    float_pattern = re.compile(
+        r'^(\+|\-)[0-9]\.[0-9]{5,6}e(\-|\+)[0-9][0-9]')
     # cmd_result = cmd_result.decode('utf-8').replace('\r\n', '')
     cmd_result = cmd_result.replace('\r\n', '')
     split_input = cmd_result.split(',')
@@ -77,8 +112,8 @@ class ScpiConnection(object):
     """ Object handling all SCPI and IEEE 488 command I/O. """
 
     def __init__(self, con, post_command_delay):
-        """ Accepts a pyserial Serial object and wraps it with python-ish SCPI
-        functionality. """
+        """ Accepts a pyserial Serial object and wraps it with python-ish
+        SCPI functionality. """
 
         self.con = con
         self.post_command_delay = post_command_delay
@@ -108,231 +143,253 @@ class ScpiConnection(object):
 
         return result
 
-    def auto_fetch(self, quantity=0):
-        """ A generator yielding a result tuple containing the primary,
-        secondary, and compared result with each iteration.
+    # Calibrate Subsystem
+    def calibrate(self, open_cal=True):
+        """ Initialize calibration.
 
-        Set the optional parameter 'quantity' to the maximnum number
-        of samples you wish to collect (default is 0: unlimited)
+        If `open` is set to `True`, it starts the "open" calibration
+        routine. Else, the "short" routine."""
 
-        Note: will yield a None if there is a timeout waiting for a
-        reading. """
+        cmdstring = 'CALibrate:{0}'
 
-        self.con.flushInput()
-        self.con.flushOutput()
-        counter = 0
+        if open_cal:
+            cmdstring.format('OPEN')
+        else:
+            cmdstring.format('SHORt')
 
-        while True:
-            result = parse(self.con.readline())
+        return self.sendcmd(cmdstring)
 
-            if len(result) == 0:
-                yield None
-            else:
-                counter += 1
-                yield result
+    def get_calibrate(self):
+        """ Return calibration status.
+        Return values
+        `0`  Done
+        `1`  Busy
+        `-1` Fail """
 
-            if quantity is not 0 and quantity == counter:
-                return
+        return self.sendcmd('CALibrate:BUSY?')
 
-    # 'Fetch Subsystem' - Fetches reading
+    # Bin Subsystem TODO
+
+    # ...
+
+    # Display Subsystem
+    def set_displayfont(self, large=False):
+        """ Set the display font to `large` or `normal`."""
+
+        return self.sendcmd('DISPlay:FONT {0}'.format(int(large)))
+
+    def get_displayfont(self):
+        """ Return the display font.
+        `0` Normal
+        `1` Large"""
+
+        return self.sendcmd('DISPlay:FONT?')
+
+    def set_displaymode(self, scientific=False):
+        """ Set the number display mode to "scientific" or "decimal" """
+
+        return self.sendcmd('DISPlay:MODE {0}'.format(scientific))
+
+    def get_displaymode(self):
+        """ Return the current display mode
+        `0` Decimal
+        `1` Scientific """
+
+        return self.sendcmd('DISPlay:MODE?')
+
+    def set_displaypage(self, page=0):
+        # TODO check values
+
+        return self.sendcmd('DISPlay:PAGE {0}'.format(page))
+
+    def get_displaypage(self):
+        """ Return display page
+        `0` Bin
+        `1` Measurement
+        `2` Sweep
+        `3` System """
+
+        return self.sendcmd('DISPlay:PAGE?')
+
+    # Fetch Subsystem
     def fetch(self):
-        """ Returns the primary, secondary, and tolerance compared
-        result currently measured from the device
-
-        Returns a tuple containing the primary value (float), secondary
-        value (float), and the tolerance compared (integer or None). """
+        """ Returns the primary and secondary result currently measured
+        from the device """
 
         return self.sendcmd('FETCh?')
 
+    # Format Subsystem
+    def set_format(self, binary=True):
+        """ Set the number format to binary or ascii
+        `True`  returns the binary (numbers only)
+        `False` returns ascii format (with units) """
+
+        return self.sendcmd('FORMat {0}'.format(binary))
+
+    def get_format(self):
+        """ Return the number format (ASCii | REAL) """
+
+        return self.sendcmd('FORMat?')
+
     # Frequency Subsystem
     def set_frequency(self, frequency):
-        """ Sets the measurment frequency.  Accepted values are:
-        100, 120, 1000, and 10000. """
+        """ Sets the measurement frequency. """
 
-        frequency = int(frequency)
-        if frequency not in FREQUENCIES:
-            raise ScpiException("""Valid frequencies are: 100, 120, 1000,
-                and 10000.""")
+        try:
+            frequency = float(frequency)
+
+        except ValueError:
+            raise ScpiException
+
+        if 20 > frequency or 300000 < frequency:
+            raise ScpiException
 
         self.sendcmd('FREQuency {0}'.format(frequency))
 
     def get_frequency(self):
-        """ Returns the current measurement frequency setting
-        returns a string of '100Hz', '120Hz', '1kHz', or '10kHz' """
+        """ Returns the current measurement frequency setting """
 
-        return self.sendcmd('FREQuency?')
+        return float(self.sendcmd('FREQuency?'))
 
-    # Function Subsystem
-    def set_primary(self, param):
-        """ Sets the primary measurement parameter.  Accepts a string
-        value of 'L', 'C', 'R', or 'Z'.
+    # Level Subsystem
+    def set_aclevel(self, level=1.0):
+        """ Set Signal test level
+        Allowed values: 0.5 or 1.0 """
+        try:
+            level = float(level)
 
-        L: Inductance
-        C: Capacitance
-        R: Resistance
-        Z: Impedance """
+        except ValueError:
+            raise ScpiException
 
-        param = param.upper()
+        if (level != 0.5) and (level != 1.0):
+            raise ScpiException
 
-        if param not in MEASURES:
-            raise ScpiException("""Valid primary parameters are 'L', 'C', 'R',
-                or 'Z'.""")
+        return self.sendcmd('LEVel:AC {0}'.format(level))
 
-        self.sendcmd('FUNCtion:impa {0}'.format(param.upper()))
+    def get_aclevel(self):
+        """ Return Signal test level """
 
-    def set_secondary(self, param):
-        """ Sets the secondary measurement parameter.  Accepts a string
-        value of 'D', 'Q', 'THETA', or 'ESR'
+        return self.sendcmd('LEVel:AC?')
 
-        D: Dissipation factor
-        Q: Quality factor
-        THETA: Phase angle (Labeled as 'θ' on the meter)
-        ESR: Equivalent series resistance. """
+    # Measurement Subsystem
+    def set_function(self, funct=Measurement.RX):
+        """ Set the measurement function.
+        Use the enumeration bkp891.Measurement for values """
 
-        param = param.upper()
-        if param not in SECONDARY_MEASURES:
-            raise ScpiException("""Valid secondary parameters are 'D',
-            'Q', 'THETA', or 'ESR' """)
+        return self.sendcmd('MEASurement:FUNCtion {0}'.format(funct.value))
 
-        self.sendcmd('FUNCtion:impb {0}'.format(param.upper()))
+    def get_function(self):
+        """ Return the measurement function """
 
-    def get_primary(self):
-        """ Queries and returns the primary measurement parameter
-        as a string.  Returns 'L', 'C', 'R', or 'Z'.
+        return self.sendcmd('MEASurement:FUNCtion?')
 
-        L: Inductance
-        C: Capacitance
-        R: Resistance
-        Z: Impedance """
+    def set_speed(self, speed=MeasSpeed.SLOW):
+        """ Set the measurement speed to fast or slow """
 
-        return self.sendcmd('FUNCtion: impa?')
+        return self.sendcmd('MEASurement:SPEED {0}'.format(speed.value))
 
-    def get_secondary(self):
-        """ Queries and returns the secondary measurement parameter
-        as a string.  Retrusn 'D', 'Q', 'THETA', or 'ESR'
+    def get_speed(self):
+        """ Return the measurement speed """
 
-        D: Dissipation factor
-        Q: Quality factor
-        THETA: Phase angle (Labeled as 'θ' on the meter)
-        ESR: Equivalent series resistance. """
+        return self.sendcmd('MEASurement:SPEED?')
 
-        return self.sendcmd('FUNCtion: impb?')
+    def set_measrange(self, range=MeasRange.AUTO):
+        """ Set the measurement range to AUTO or HOLD """
 
-    def set_equiv_series(self):
-        """ Sets measurement mode to series. """
-        self.sendcmd('FUNCtion:EQUivalent SERies')
+        return self.sendcmd('MEASurement:RANGe {0}'.format(range.value))
 
-    def set_equiv_parallel(self):
-        """ Sets measurement mode to parallel. """
+    def get_measrange(self):
+        """ Return the measurement range """
 
-        self.sendcmd('FUNCtion:EQUivalent parallel')
+        return self.sendcmd('MEASurement:RANGe?')
 
-    def get_equiv(self):
-        """ Queries and returns the measurement mode (series or parallel)
+    # Sweep Subsystem TODO
 
-        returns a string of 'SER' or 'PAL'. """
-        return self.sendcmd('FUNCtion:EQUivalent?')
+    # ...
 
-    # Calculate Subsystem
-    def set_relative(self, relative_value):
-        """ Enabels or disables relative function based on
-        boolean value. """
+    # Save Subsystem TODO
 
-        if relative_value:
-            self.sendcmd('CALCulate:RELative:STATe ON')
-        else:
-            self.sendcmd('CALCulate:RELative:STATe OFF')
+    # ...
 
-    def get_relative_state(self):
-        """ Queries and returns the state of the relative function
-        Returns a boolean value of the current relative state. """
-        return self.sendcmd('CALCulate:RELative:STATe?')
+    # System Subsystem
+    def set_brightness(self, level):
+        """ Set the screen brightness `(0-9)`"""
 
-    def get_relative_value(self):
-        """ Queries and returns the relative value or None if unavailable
-        Returns a float of the relative offset or None if Relative state
-        is inactive. """
-        return self.sendcmd('CALCulate:RELative:VALUe?')
+        try:
+            level = int(level)
+        except ValueError:
+            raise ScpiException
 
-    def set_tolerance_state(self, tolerance_state):
-        """ Enables or disables tolerance state based on boolean value. """
-        if tolerance_state:
-            self.sendcmd('CALCulate:TOLerance:STATe ON')
-        else:
-            self.sendcmd('CALCulate:TOLerance:STATe OFF')
+        if (0 > level) or (9 < level):
+            raise ScpiException
 
-    def set_tolerance_range(self, tolerance_range):
-        """ Sets the current tolerance range to 1, 5, 10, or 20 percent. """
-        if tolerance_range not in TOLERANCES:
-            raise ScpiException(""" Valid tolerance ranges are 1, 5,
-                10 or 20. """)
+        return self.sendcmd('SYStem:BRIGhtness {0}'.format(level))
 
-        self.sendcmd('CALCulate:TOLerance:RANGe {0}'.format(tolerance_range))
+    def get_brightness(self):
+        """ Return the screen brightness """
 
-    def get_tolerance_state(self):
-        """ Queries and returns whether tolerance is enabled or disabled
-        Returns a boolean value. """
-        return self.sendcmd('CALCulate:TOLerance:STATe?')
+        return self.sendcmd('SYStem:BRIGhtness?')
 
-    def get_tolerance_nominal(self):
-        """ Queries and returns the nominal value fo tolerance or None
-        if unavailable. Returns a float value or None if unavailable. """
-        return self.sendcmd('CALCulate:TOLerance:NOMinal?')
+    def set_beeper(self, on=True):
+        """ Set the beeper """
 
-    def get_tolerance_value(self):
-        """ Queries and returns the percent value of tolerance or None
-        if unavailable.  Returns a float value or None if unavailable. """
-        return self.sendcmd('CALCulate:TOLerance:VALUe?')
+        if on:
+            return self.sendcmd('SYStem:BEEPer ON')
+        return self.sendcmd('SYStem:BEEPer OFF')
 
-    def get_tolerance_range(self):
-        """ Queries and returns the tolerance range.
-        Returns a string value of 'BIN1', 'BIN2', 'BIN3', 'BIN4'
-        or None if unavailable. """
-        return self.sendcmd('CALCulate:TOLerance:RANGe?')
+    def get_beeper(self):
+        """ Return the state of the beeper """
 
-    def set_recording_state(self, recording_state):
-        """ Enables or disables the recording state of the device. """
+        return self.sendcmd('SYStem:BEEPer?')
 
-        if recording_state:
-            self.sendcmd('CALCulate:RECording:STATe ON')
-        else:
-            self.sendcmd('CALCulate:RECording:STATe OFF')
+    def set_date(self, isodate=''):
+        """ Set the date from a date string in the format YYYY-MM-DD.
+        Default sets the date to today """
 
-    def get_recording_state(self):
-        """ Queries and returns the status of recording.
-        Returns a boolean value. """
-        return self.sendcmd('CALCulate:RECording:STATe?')
+        dt = datetime.date.today()
+        if isodate != '':
+            try:
+                dt = datetime.date.fromisoformat(isodate)
+            except ValueError:
+                raise ScpiException
 
-    def get_recording_max(self):
-        """ Queries and returns the max recorded value. Returns a tuple of
-        floats containing the primary and secondary maximum measurement. """
-        return self.sendcmd('CALCulate:RECording:MAXimum?')
+        return self.sendcmd('SYStem:DATE {0},{1},{2}'.format(dt.year,
+                                                             dt.month,
+                                                             dt.day))
 
-    def get_recording_min(self):
-        """ Queries and returns the minimum recorded value. Returns a tuple of
-        floats containing the primary and secondary minimum measurement. """
-        return self.sendcmd('CALCulate:RECording:MINimum?')
+    def get_date(self):
+        """ Return the instrument date """
 
-    def get_recording_avg(self):
-        """ Queries and returns the average recorded value. Returns a tuple of
-        floats containing the primary and secondary average measurement. """
-        return self.sendcmd('CALCulate:RECording:AVERage?')
+        return self.sendcmd('SYStem:DATE?')
 
-    def get_recording_present(self):
-        """ Queries and returns the present value of the recording function.
-        Returns a tuple of floats containing the primary and secondary present
-        measurement. """
-        return self.sendcmd('CALCulate:RECording:PRESent?')
+    def set_time(self, isotime=''):
+        """ Set the time from a date string in the format HH:MM:SS.
+            Default sets the time to now """
 
-    # IEEE 488 commands
-    def local_lockout(self):
-        """ Locks the front panel """
-        self.sendcmd('*LLO')
+        dt = datetime.datetime.now().time()
+        if isotime != '':
+            try:
+                dt = datetime.time.fromisoformat(isotime)
+            except ValueError:
+                raise ScpiException
 
-    def go_local(self):
-        """ Puts the meter into local state - clears front-panel lockout. """
-        self.sendcmd('*GLO')
+        return self.sendcmd('SYStem:TIME {0},{1},{2}'.format(dt.hour,
+                                                             dt.minute,
+                                                             dt.second))
 
+    def get_time(self):
+        """ Return the instrument time """
+
+        return self.sendcmd('SYStem:TIME?')
+
+    def get_error(self):
+        """ Return the first element of the error stack """
+
+        return self.sendcmd('SYStem:ERRor?')
+
+    # TODO add IP subsubsystem
+
+    # IEEE 488.2 commands
     def get_instrument(self):
         """ Queries and returns the instrument ID
         containing the model, firmware version, and serial number. """
@@ -344,10 +401,36 @@ class ScpiConnection(object):
 
         return self.sendcmd('*CLS')
 
+    def reset(self):
+        """ Reset the instrument. """
+
+        return self.sendcmd('*RST')
+
+    def save_configuration(self, number=1):
+        """ Save the current configuration to memory """
+
+        try:
+            number = int(number)
+
+        except ValueError:
+            raise ScpiException
+
+        return self.sendcmd('*SAV {0}'.format(number))
+
+    def recall_configuration(self, number=1):
+        """ Recall a configuration from memory """
+
+        try:
+            number = int(number)
+
+        except ValueError:
+            raise ScpiException
+
+        return self.sendcmd('*RCL {0}'.format(number))
+
 
 class ScpiException(Exception):
     """ Exception class for SCPI Commands. Raised when an enum-bounded
     parameter is invalid """
 
     pass
-
