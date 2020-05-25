@@ -188,7 +188,7 @@ class ScpiConnection(object):
     def set_displaymode(self, scientific=False):
         """ Set the number display mode to "scientific" or "decimal" """
 
-        return self.sendcmd('DISPlay:MODE {0}'.format(scientific))
+        return self.sendcmd('DISPlay:MODE {0}'.format(int(scientific)))
 
     def get_displaymode(self):
         """ Return the current display mode
@@ -198,7 +198,13 @@ class ScpiConnection(object):
         return self.sendcmd('DISPlay:MODE?')
 
     def set_displaypage(self, page=0):
-        # TODO check values
+        try:
+            page = int(page)
+        except ValueError:
+            raise ScpiException
+
+        if (page < 0) or (page > 3):
+            raise ScpiException
 
         return self.sendcmd('DISPlay:PAGE {0}'.format(page))
 
@@ -224,7 +230,7 @@ class ScpiConnection(object):
         `True`  returns the binary (numbers only)
         `False` returns ascii format (with units) """
 
-        return self.sendcmd('FORMat {0}'.format(binary))
+        return self.sendcmd('FORMat {0}'.format(int(binary)))
 
     def get_format(self):
         """ Return the number format (ASCii | REAL) """
